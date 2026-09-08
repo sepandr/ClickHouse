@@ -1,0 +1,13 @@
+<clickhouse>
+    <!-- `filesystem_caches_path` is set and a per-cache `path` is relative. The setting does not
+         reach these entries: `loadDefaultCaches` runs before `setFilesystemCachesPath`, so
+         `getPathPrefixForRelativeCachePath` reads an empty setting and falls back to
+         `<path>/caches`. The mount below therefore stays empty. -->
+    <filesystem_caches_path>/mnt/clickhouse-cache/</filesystem_caches_path>
+    <filesystem_caches>
+        <docker_caches_path_cache>
+            <max_size>10000000</max_size>
+            <path>docker_caches_path_cache</path>
+        </docker_caches_path_cache>
+    </filesystem_caches>
+</clickhouse>
