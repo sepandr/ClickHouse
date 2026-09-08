@@ -46,9 +46,10 @@ readarray -t DISKS_METADATA_PATHS < <(clickhouse extract-from-config --config-fi
 # by the disk paths above. The server creates it in `FileCache::initialize`, which fails when the
 # parent is a directory it does not own and the process has no capability to work around that.
 #
-# Only an absolute entry needs this. A relative one is resolved by the server under `<path>/caches`,
-# inside the data directory this script already owns, so the server creates it itself.
-readarray -t FILESYSTEM_CACHES_PATHS < <(clickhouse extract-from-config --config-file "$CLICKHOUSE_CONFIG" --key='filesystem_caches.*.path' || true)
+# Absolute entries only. The server resolves a relative one under `<path>/caches`, inside the data
+# directory this script already owns, so it creates that itself; preparing the value as written would
+# make a directory next to the one actually used.
+readarray -t FILESYSTEM_CACHES_PATHS < <(clickhouse extract-from-config --config-file "$CLICKHOUSE_CONFIG" --key='filesystem_caches.*.path' | grep '^/' || true)
 
 CLICKHOUSE_USER="${CLICKHOUSE_USER:-default}"
 CLICKHOUSE_PASSWORD_FILE="${CLICKHOUSE_PASSWORD_FILE:-}"
