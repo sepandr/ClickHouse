@@ -15,7 +15,13 @@ from ci.praktika.result import Result
 from ci.praktika.utils import Shell, Utils
 
 GITHUB_SERVER_URL = os.getenv("GITHUB_SERVER_URL", "https://github.com")
-temp_path = Path(f"{Utils.cwd()}/ci/tmp")
+
+# Derived from this file, not the working directory: a caller in another directory would otherwise
+# get a clone path outside `ci/tmp` and a `config.sh` that does not exist. `lib.sh` resolves its own
+# root the same way, from its own location.
+REPO_ROOT = Path(__file__).resolve().parents[4]
+TEMP_PATH = REPO_ROOT / "ci/tmp"
+CONFIG_OVERRIDE = REPO_ROOT / "ci/jobs/scripts/docker_server/config.sh"
 
 
 def is_distroless_image(docker_image: str) -> bool:
@@ -88,10 +94,8 @@ def test_docker_library(test_results, check_images=None) -> None:
     try:
         repo = "docker-library/official-images"
         logging.info("Cloning %s repository to run tests for 'clickhouse' image", repo)
-        repo_path = temp_path / repo
-        config_override = (
-            Path(Utils.cwd()) / "ci/jobs/scripts/docker_server/config.sh"
-        ).absolute()
+        repo_path = TEMP_PATH / repo
+        config_override = CONFIG_OVERRIDE
         if not Shell.check(
             f"git clone --depth 1 {GITHUB_SERVER_URL}/{repo} {repo_path}",
             verbose=True,
